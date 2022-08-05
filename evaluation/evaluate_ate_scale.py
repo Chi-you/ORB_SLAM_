@@ -45,6 +45,7 @@ import sys
 import numpy
 import argparse
 import associate
+import csv
 
 def align(model,data):
     """Align two trajectories using the method of Horn (closed-form).
@@ -143,8 +144,9 @@ if __name__=="__main__":
     parser.add_argument('--save', help='save aligned second trajectory to disk (format: stamp2 x2 y2 z2)')
     parser.add_argument('--save_associations', help='save associated first and aligned second trajectory to disk (format: stamp1 x1 y1 z1 stamp2 x2 y2 z2)')
     parser.add_argument('--plot', help='plot the first and the aligned second trajectory to an image (format: png)')
-    parser.add_argument('--verbose', help='print all evaluation data (otherwise, only the RMSE absolute translational error in meters after alignment will be printed)', action='store_true')
-    parser.add_argument('--verbose2', help='print scale eror and RMSE absolute translational error in meters after alignment with and without scale correction', action='store_true')
+    parser.add_argument('--verbose', help='print all evaluation data (otherwise, only the RMSE absolute translational error in meters after alignment will be printed)', action='store_true') ## command
+    parser.add_argument('--verbose2', help='print scale eror and RMSE absolute translational error in meters after alignment with and without scale correction', action='store_true') ## 
+    parser.add_argument('--ds', help='datasets') ## 
     args = parser.parse_args()
 
     first_list = associate.read_file_list(args.first_file, False)
@@ -192,6 +194,10 @@ if __name__=="__main__":
         print "compared_pose_pairs %d pairs"%(len(trans_error))
         print "absolute_translational_error.rmse %f m"%numpy.sqrt(numpy.dot(trans_error,trans_error) / len(trans_error))
         print "absolute_translational_errorGT.rmse %f m"%numpy.sqrt(numpy.dot(trans_errorGT,trans_errorGT) / len(trans_errorGT))
+    if args.ds:
+        with open('result10.csv', 'a') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow([args.ds, numpy.sqrt(numpy.dot(trans_error,trans_error) / len(trans_error))])
 
     if args.save_associations:
         file = open(args.save_associations,"w")
@@ -214,9 +220,9 @@ if __name__=="__main__":
         plot_traj(ax,first_stamps,first_xyz_full.transpose().A,'-',"black","ground truth")
         plot_traj(ax,second_stamps,second_xyz_full_aligned.transpose().A,'-',"blue","estimated")
         label="difference"
-        for (a,b),(x1,y1,z1),(x2,y2,z2) in zip(matches,first_xyz.transpose().A,second_xyz_aligned.transpose().A):
-            ax.plot([x1,x2],[y1,y2],'-',color="red",label=label)
-            label=""
+        # for (a,b),(x1,y1,z1),(x2,y2,z2) in zip(matches,first_xyz.transpose().A,second_xyz_aligned.transpose().A):
+        #     ax.plot([x1,x2],[y1,y2],'-',color="red",label=label)
+        #     label=""
             
         ax.legend()
             
